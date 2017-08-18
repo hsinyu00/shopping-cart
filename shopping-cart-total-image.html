@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SHOPPING CART</title>
+<meta charset='utf8'>
+<style>
+    table,th,td {
+        border:1px solid #aaa;
+    }
+    hr {
+        border: 0;
+        height: 1px;
+        background-color: #eee;
+    }
+    .prod-img {
+        float: left;
+        margin-right: 20px;
+        width: 200px;
+        height: 200px;
+    }
+    .clearfix:before, .clearfix:after {
+        content: " ";
+        display: table;
+    }
+    .clearfix:after {
+        clear: both;
+    }
+    #emptyCart {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+    <h2>Products</h2>
+    <div id="products">
+
+    </div>
+    <h2>My Shopping Cart</h2>
+    <div id="cart">
+    No item in cart.
+    </div>
+    <button id="emptyCart">clear cart</button>
+
+<script>
+
+
+// read products from json
+
+var products = [ // it's an object array
+    {
+        "id":"product1",
+        "name":"iPhone 6 Plus",
+        "price":"17000",
+        "image": "images/iphone-6-plus.jpg"
+    },
+    {
+        "id":"product2",
+        "name":"Nokia Lumia 1520",
+        "price":"12500",
+        "image": "images/nokia-lumia-1520.jpg"
+    },
+    {
+        "id":"product3",
+        "name":"Samsung Galaxy Note 4",
+        "price":"18500",
+        "image":"images/samsung-galaxy-note-4.png"
+    },
+    {
+        "id":"product4",
+        "name":"Sony Xepria Z5",
+        "price":"20500",
+        "image":"images/sony-z5.png"
+    }
+];
+
+var cartItems = [];
+var total = 0;
+var productsEl = document.querySelector("#products");
+var cartEl = document.querySelector("#cart");
+
+// display products
+function displayProducts(){
+    var productsHTML = '';
+
+
+    for(i = 0; i < products.length; i++){
+        productsHTML += '<img class="prod-img" src="' + products[i].image + '">';
+        productsHTML += '<div class="clearfix" id=\"' + products[i].id + '\">';
+        productsHTML += '<p><b>ID</b>:' + products[i].id + '</p>';
+        productsHTML += '<p><b>Product</b>:' + products[i].name + '</p>';
+        productsHTML += '<p><b>Price</b>:' + products[i].price + '</p>';
+        productsHTML += '<p><button class=\"add-to-cart\" data-id =\"' + products[i].id + '\">Add to cart</button>';
+        productsHTML += '</div><hr>';
+    }
+
+    productsEl.innerHTML = productsHTML;
+}
+
+function addtoCartFunc(e){
+    var t = e.target;
+    var theId = t.getAttribute('data-id');
+    var inCart = false;
+
+    // find id in product
+    for (var i = 0; i < products.length; i++){
+      if (products[i].id === theId ){
+          item = products[i];
+      }
+    }
+
+    /*
+    加入購物車時，比對購物車中是否已有某產品
+    1. 目前加入產品，購物車中已有
+    => 不要新增(push)產品資訊，而是要找到符合的產品，累加1
+
+    2. 要設 inCart flag 的原因：
+    => 迴圈會比對全部購物車項目，當前加入項目不符合迴圈指到的項目時，
+    只代表還沒找到符合項目，不代表購物車中不存在該項目。如果這時push產品資訊，
+    就會造成相同產品列在兩個不同的行，而不是累加。
+
+    因此找到項目時標為 inCart = true, 如果整圈跑完確定項目不存在，才push產品資訊。
+
+    */
+
+    // check if product already in cart
+    if(cartItems.length > 0) {
+        for(i = 0; i < cartItems.length; i++){
+            if(cartItems[i].id === theId) {
+                inCart = true;  // in cart 就不要再跑迴圈，否則會把不是這一回合的也加上去
+                cartItems[i].quantity+=1;
+            }
+            // else {
+            //     cartItems.push(item); // wrong! 不是這一輪的也被 push 一次
+            // }
+        }
+    }
+    if(cartItems.length === 0 || inCart === false) {
+        item.quantity = 1;
+        cartItems.push(item);
+        console.log('else cart = 0 and new item');
+    }
+    displayCart();
+    localStorage["cartItems"] = JSON.stringify(cartItems);
+    cartEl.scrollIntoView();
+
+}
+
+function displayCart(){
+    var cartHTML = '<table><tr><th>product id</th><th>product name</th><th>quantity</th><th>subtotal</th></tr>';
+
+
+    if (cartItems.length > 0) {
+
+        for(i = 0; i < cartItems.length; i++){
+            cartHTML += '<tr><td id="cart-">' + cartItems[i].id + '</td>';
+            cartHTML += '<td>' + cartItems[i].name + '</td>';
+            cartHTML += '<td>' + cartItems[i].quantity + '</td>';
+            cartHTML += '<td>' + cartItems[i].price * cartItems[i].quantity + '</td>';
+            cartHTML += '</tr>';
+        }
+        calculateTotal();
+        cartHTML += '<tr><td colspan=3>Total</td><td>' + total + '</td></tr>';
+        cartHTML += '</table>';
+        cartEl.innerHTML = cartHTML;
+    }
+    else {
+        cartEl.innerHTML = 'No item in cart.';
+    }
+}
+
+function calculateTotal(){
+    total = 0;
+    for(i = 0; i < cartItems.length; i++){
+        total+=cartItems[i].quantity * cartItems[i].price;
+    }
+}
+
+(function(){
+    displayProducts();
+
+    // must after displayProducts <= it's a problem
+    var addtoCart = document.querySelectorAll('.add-to-cart');
+    var emptyCart = document.querySelector('#emptyCart');
+
+    for(i = 0; i < addtoCart.length; i++) {
+        addtoCart[i].addEventListener("click", addtoCartFunc, false);
+    }
+
+    if (localStorage["cartItems"]!= null) {
+        cartItems = JSON.parse(localStorage["cartItems"].toString());
+        displayCart();
+    }
+
+    emptyCart.addEventListener("click", function(e) {
+        cartItems = [];
+        localStorage["cartItems"] = JSON.stringify(cartItems);
+        displayCart();
+    }, false);
+
+
+
+})();
+
+
+</script>
+
+<!--Next Step:
+    1. calculate total price
+    2. ajax product info
+    3. try calculating total with closure
+    4. editable quantity
+-->
+</body>
+</html>

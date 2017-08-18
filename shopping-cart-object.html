@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SHOPPING CART</title>
+<meta charset='utf8'>
+<style>
+    table,th,td {
+        border:1px solid #aaa;
+    }
+    hr {
+        border: 0;
+        height: 1px;
+        background-color: #eee;
+    }
+    .prod-img {
+        float: left;
+        margin-right: 20px;
+        width: 200px;
+        height: 200px;
+    }
+    .clearfix:before, .clearfix:after {
+        content: " ";
+        display: table;
+    }
+    .clearfix:after {
+        clear: both;
+    }
+    #emptyCart {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+    <h2>Products</h2>
+    <div id="products">
+
+    </div>
+    <h2>My Shopping Cart</h2>
+    <div id="cart">
+    No item in cart.
+    </div>
+    <button id="emptyCart">clear cart</button>
+
+<script>
+
+function Cart(){
+    var self = this;
+
+    function grabRespond(respond, self){
+        self.products = respond;
+        // console.log(self.products);
+        displayProducts("products", respond);
+    }
+
+    function displayProducts(node, prodData){
+        var node = document.getElementById(node)
+        for(i = 0; i < prodData.length; i++){
+            var item = document.createElement("div");
+            item.classList.add("clearfix");
+            item.setAttribute("id", prodData[i].id);
+            var img = document.createElement("img");
+            img.src = prodData[i].image;
+            img.classList.add("prod-img");
+            item.appendChild(img);
+            var pid = document.createElement("p");
+            pid.textContent = prodData[i].id;
+            item.appendChild(pid);
+            var pname = document.createElement("p");
+            pname.textContent = prodData[i].name;
+            item.appendChild(pname);
+            var price = document.createElement("p");
+            price.textContent = prodData[i].price;
+            item.appendChild(price);
+            var btn = document.createElement("button");
+            btn.classList.add("add-to-cart");
+            btn.setAttribute("data-id", prodData[i].id);
+            btn.textContent = "Add to cart";
+            item.appendChild(btn);
+            node.appendChild(item);
+            var hr = document.createElement("hr");
+            node.appendChild(hr);
+        }
+    }
+
+    this.loadProducts = function(file){
+        var request = new XMLHttpRequest();
+        if (!request) {
+          alert('Giving up :( Cannot create an XMLHTTP instance');
+          return false;
+        }
+        request.onreadystatechange = ajaxLoad;
+        request.open('GET', file);
+        request.send();
+
+        function ajaxLoad() {
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    var prod = JSON.parse(request.responseText);
+                    grabRespond(prod, self);
+                } else {
+                    alert('There was a problem with the request.');
+                    return false;
+                }
+            }
+        }
+    }
+
+
+}
+
+var myCart = new Cart();
+myCart.loadProducts('products2.json');
+
+</script>
+</body>
+</html>

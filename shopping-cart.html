@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SHOPPING</title>
+<meta charset='utf8'>
+<style>
+    table,th,td {
+        border:1px solid #aaa;
+    }
+</style>
+</head>
+<body>
+    <h2>Products</h2>
+    <div id="products">
+
+    </div>
+    <h2>My Shopping Cart</h2>
+    <div id="cart">
+
+    </div>
+    <button id="emptyCart">clear cart</button>
+
+<script>
+
+
+// read products from json
+
+var products = [ // it's an object array
+    {
+        "id":"product1",
+        "name":"iPhone 6 Plus",
+        "price":"17000",
+    },
+    {
+        "id":"product2",
+        "name":"Nokia Lumia 1520",
+        "price":"12500",
+    },
+    {
+        "id":"product3",
+        "name":"Samsung Galaxy Note 4",
+        "price":"18500",
+    }
+];
+
+var cartItems = [];
+
+// display products
+function displayProducts(){
+    var productsHTML = '';
+    var productsEl = document.querySelector("#products");
+
+    for(i = 0; i < products.length; i++){
+        productsHTML += '<div id=\"' + products[i].id + '\">'
+        productsHTML += '<p><b>ID</b>:' + products[i].id + '</p>';
+        productsHTML += '<p><b>Product</b>:' + products[i].name + '</p>';
+        productsHTML += '<p><b>Price</b>:' + products[i].price + '</p>';
+        productsHTML += '<p><button class=\"add-to-cart\" data-id =\"' + products[i].id + '\">Add to cart</button>';
+        productsHTML += '</div><hr>';
+    }
+
+    productsEl.innerHTML = productsHTML;
+}
+
+function addtoCartFunc(e){
+    var t = e.target;
+    var theId = t.getAttribute('data-id');
+    var inCart = false;
+
+    // find id in product
+    for (var i = 0; i < products.length; i++){
+      if (products[i].id === theId ){
+          item = products[i];
+      }
+    }
+
+    // check if product already in cart
+    if(cartItems.length > 0) {
+        for(i = 0; i < cartItems.length; i++){
+            if(cartItems[i].id === theId) {
+                inCart = true;  // in cart 就不要再跑迴圈，否則會把不是這一回合的也加上去
+                cartItems[i].quantity+=1;
+            }
+            // else {
+            //     cartItems.push(item); // wrong! 不是這一輪的也被 push 一次
+            // }
+        }
+    }
+    if(cartItems.length === 0 || inCart === false) {
+        item.quantity = 1;
+        cartItems.push(item);
+        console.log('else cart = 0 and new item');
+    }
+    displayCart();
+    localStorage["cartItems"] = JSON.stringify(cartItems);
+
+}
+
+function displayCart(){
+    var cartHTML = '<table><tr><th>product id</th><th>product name</th><th>price</th><th>quantity</th></tr>';
+    var cartEl = document.querySelector("#cart");
+
+    if (cartItems.length > 0) {
+
+        for(i = 0; i < cartItems.length; i++){
+            cartHTML += '<tr><td id="cart-">' + cartItems[i].id + '</td>';
+            cartHTML += '<td>' + cartItems[i].name + '</td>';
+            cartHTML += '<td>' + cartItems[i].price + '</td>';
+            cartHTML += '<td>' + cartItems[i].quantity + '</td>';
+            cartHTML += '</tr>'
+        }
+        cartHTML += '</table>'
+        cartEl.innerHTML = cartHTML;
+    }
+    else {
+        cartEl.innerHTML = 'No item in cart';
+    }
+}
+
+(function(){
+    displayProducts();
+
+    // must after displayProducts <= it's a problem
+    var addtoCart = document.querySelectorAll('.add-to-cart');
+    var emptyCart = document.querySelector('#emptyCart');
+
+    for(i = 0; i < addtoCart.length; i++) {
+        addtoCart[i].addEventListener("click", addtoCartFunc, false);
+    }
+
+    if (localStorage["cartItems"]!= null) {
+        cartItems = JSON.parse(localStorage["cartItems"].toString());
+        displayCart();
+    }
+
+    emptyCart.addEventListener("click", function(e) {
+        cartItems = [];
+        localStorage["cartItems"] = JSON.stringify(cartItems);
+        displayCart();
+    }, false);
+
+
+
+})();
+
+
+
+</script>
+</body>
+</html>
