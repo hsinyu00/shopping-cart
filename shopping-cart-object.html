@@ -45,13 +45,17 @@
 
 function Cart(){
     var self = this;
+    self.products = [];
+    self.cartItems = [];
 
     function grabRespond(respond, self){
         self.products = respond;
-        // console.log(self.products);
         displayProducts("products", respond);
     }
 
+    /*
+    render catalog template
+    */
     function displayProducts(node, prodData){
         var node = document.getElementById(node)
         for(i = 0; i < prodData.length; i++){
@@ -75,10 +79,59 @@ function Cart(){
             btn.classList.add("add-to-cart");
             btn.setAttribute("data-id", prodData[i].id);
             btn.textContent = "Add to cart";
+            btn.addEventListener("click", addtoCart, false);
             item.appendChild(btn);
             node.appendChild(item);
             var hr = document.createElement("hr");
             node.appendChild(hr);
+        }
+    }
+
+    function addtoCart(e){
+        var targetId = e.target.getAttribute('data-id');
+        for (var i = 0; i < self.products.length; i++){
+          if (self.products[i].id === targetId){
+              var targetItem = self.products[i];
+          }
+        }
+        // check if product already in cart
+        if(self.cartItems.length > 0) {
+            var inCart = false;
+            for(i = 0; i < self.cartItems.length; i++){
+                if(self.cartItems[i].id === targetId) { // cart 內已有此商品
+                    if(self.cartItems[i].quantity < 4) {
+                        self.cartItems[i].quantity+=1;
+                    }
+                    else {
+                        alert("每項商品最多買4個");
+                    }
+                    inCart = true;
+                    break;
+                }
+            }
+            // cart 內沒有此商品
+            if(inCart === false) {
+                self.cartItems.push(targetItem);
+                targetItem.quantity = 1;
+            }
+        } else { // 購物車是空的
+            self.cartItems.push(targetItem);
+            targetItem.quantity = 1;
+        }
+    }
+
+    function displayCart(node, cartData){
+        var node = document.getElementById(node);
+        for(i = 0; i < cartData.length; i++){
+            var item = document.createElement("tr");
+            for(key in cartData[i]) {
+                var theAttr = document.createElement("td");
+                theAttr.classList.add(key);
+                theAttr.textContent = carData[i][key];
+                item.appendChild(theAttr);
+            }
+            name.textContent = cartData[i].name;
+            item.setAttribute("id", "cart-product" + (i+1));
         }
     }
 
