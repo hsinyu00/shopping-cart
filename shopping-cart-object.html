@@ -88,16 +88,20 @@ function Cart(){
     }
 
     function addtoCart(e){
-        var targetId = e.target.getAttribute('data-id');
+        var targetId = e.target.getAttribute('data-id'),
+            targetItem = {};
         for (var i = 0; i < self.products.length; i++){
           if (self.products[i].id === targetId){
-              var targetItem = self.products[i];
+              targetItem.id = self.products[i].id;
+              targetItem.name = self.products[i].name;
+              targetItem.price = self.products[i].price;
           }
         }
         // check if product already in cart
         if(self.cartItems.length > 0) {
+            var cartlen = self.cartItems.length;
             var inCart = false;
-            for(i = 0; i < self.cartItems.length; i++){
+            for(i = 0; i < cartlen; i++){
                 if(self.cartItems[i].id === targetId) { // cart 內已有此商品
                     if(self.cartItems[i].quantity < 4) {
                         self.cartItems[i].quantity+=1;
@@ -112,26 +116,33 @@ function Cart(){
             // cart 內沒有此商品
             if(inCart === false) {
                 self.cartItems.push(targetItem);
-                targetItem.quantity = 1;
+                self.cartItems[i].quantity = 1;
             }
         } else { // 購物車是空的
             self.cartItems.push(targetItem);
-            targetItem.quantity = 1;
+            self.cartItems[0].quantity = 1;
         }
+
+        updateCart('cart', self.cartItems);
     }
 
-    function displayCart(node, cartData){
+    /*
+    render cart template
+    */
+    function updateCart(node, cartData){
         var node = document.getElementById(node);
+        node.innerHTML = "";
         for(i = 0; i < cartData.length; i++){
             var item = document.createElement("tr");
             for(key in cartData[i]) {
                 var theAttr = document.createElement("td");
                 theAttr.classList.add(key);
-                theAttr.textContent = carData[i][key];
+                theAttr.textContent = cartData[i][key];
                 item.appendChild(theAttr);
             }
             name.textContent = cartData[i].name;
             item.setAttribute("id", "cart-product" + (i+1));
+            node.appendChild(item);
         }
     }
 
