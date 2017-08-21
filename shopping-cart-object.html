@@ -47,6 +47,7 @@ function Cart(){
     var self = this;
     self.products = [];
     self.cartItems = [];
+    var emptyCart = document.getElementById('emptyCart');
 
     function grabRespond(respond, self){
         self.products = respond;
@@ -87,6 +88,9 @@ function Cart(){
         }
     }
 
+    /*
+    add cart item
+    */
     function addtoCart(e){
         var targetId = e.target.getAttribute('data-id'),
             targetItem = {};
@@ -123,13 +127,13 @@ function Cart(){
             self.cartItems[0].quantity = 1;
         }
 
-        updateCart('cart', self.cartItems);
+        self.displayCart('cart', self.cartItems);
     }
 
     /*
     render cart template
     */
-    function updateCart(node, cartData){
+    self.displayCart = function(node, cartData){
         var node = document.getElementById(node);
         node.innerHTML = "";
         for(i = 0; i < cartData.length; i++){
@@ -146,7 +150,12 @@ function Cart(){
         }
     }
 
-    this.loadProducts = function(file){
+    emptyCart.addEventListener("click", function(e) {
+        self.cartItems = [];
+        self.displayCart('cart', self.cartItems);
+    }, false);
+
+    self.loadProducts = function(file){
         var request = new XMLHttpRequest();
         if (!request) {
           alert('Giving up :( Cannot create an XMLHTTP instance');
@@ -168,12 +177,22 @@ function Cart(){
             }
         }
     }
-
-
 }
 
-var myCart = new Cart();
-myCart.loadProducts('products2.json');
+(function(){
+    var myCart = new Cart();
+
+    myCart.loadProducts('products2.json');
+
+    if (localStorage.cartItems) {
+        myCart.cartItems = JSON.parse(localStorage.cartItems);
+        myCart.displayCart('cart', myCart.cartItems);
+    }
+    window.addEventListener('beforeunload', function(e) {
+        localStorage.cartItems = JSON.stringify(myCart.cartItems);
+    }, false);
+
+})();
 
 </script>
 </body>
