@@ -28,6 +28,9 @@
     #emptyCart {
         margin-top: 20px;
     }
+    td {
+        padding: 5px;
+    }
 </style>
 </head>
 <body>
@@ -46,8 +49,14 @@
 function Cart(){
     var self = this;
     self.products = [];
-    self.cartItems = [];
+    var cartRt = document.getElementById('cart');
     var emptyCart = document.getElementById('emptyCart');
+    if (localStorage.cartItems) {
+        self.cartItems = JSON.parse(localStorage.cartItems);
+        displayCart(cartRt, self.cartItems);
+    } else {
+        self.cartItems = [];
+    }
 
     function grabRespond(respond, self){
         self.products = respond;
@@ -57,8 +66,8 @@ function Cart(){
     /*
     render catalog template
     */
-    function displayProducts(node, prodData){
-        var node = document.getElementById(node)
+    function displayProducts(id, prodData){
+        var node = document.getElementById(id);
         for(i = 0; i < prodData.length; i++){
             var item = document.createElement("div");
             item.classList.add("clearfix");
@@ -127,15 +136,14 @@ function Cart(){
             self.cartItems[0].quantity = 1;
         }
 
-        self.displayCart('cart', self.cartItems);
+        displayCart(cartRt, self.cartItems);
     }
 
     /*
     render cart template
     */
-    self.displayCart = function(node, cartData){
-        var node = document.getElementById(node);
-        node.innerHTML = "";
+    function displayCart(cartRt, cartData){
+        cartRt.innerHTML = "";
         for(i = 0; i < cartData.length; i++){
             var item = document.createElement("tr");
             for(key in cartData[i]) {
@@ -146,13 +154,14 @@ function Cart(){
             }
             name.textContent = cartData[i].name;
             item.setAttribute("id", "cart-product" + (i+1));
-            node.appendChild(item);
+            cartRt.appendChild(item);
         }
     }
 
     emptyCart.addEventListener("click", function(e) {
         self.cartItems = [];
-        self.displayCart('cart', self.cartItems);
+        displayCart('cart', self.cartItems);
+        cartRt.innerHTML = "No item in cart.";
     }, false);
 
     self.loadProducts = function(file){
@@ -179,20 +188,16 @@ function Cart(){
     }
 }
 
-(function(){
+// (function(){
     var myCart = new Cart();
 
     myCart.loadProducts('products2.json');
 
-    if (localStorage.cartItems) {
-        myCart.cartItems = JSON.parse(localStorage.cartItems);
-        myCart.displayCart('cart', myCart.cartItems);
-    }
     window.addEventListener('beforeunload', function(e) {
         localStorage.cartItems = JSON.stringify(myCart.cartItems);
     }, false);
 
-})();
+// })();
 
 </script>
 </body>
