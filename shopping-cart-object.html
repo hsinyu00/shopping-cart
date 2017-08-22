@@ -146,16 +146,50 @@ function Cart(){
         cartRt.innerHTML = "";
         for(i = 0; i < cartData.length; i++){
             var item = document.createElement("tr");
+            var qty,
+                qtyBtn,
+                del,
+                delBtn;
+
+            item.setAttribute("id", "cart-" + (cartData[i].id));
+
+            // key from product data
             for(key in cartData[i]) {
-                var theAttr = document.createElement("td");
-                theAttr.classList.add(key);
-                theAttr.textContent = cartData[i][key];
-                item.appendChild(theAttr);
+                var field = document.createElement("td");
+                field.classList.add(key);
+                field.textContent = cartData[i][key];
+                item.appendChild(field);
             }
-            name.textContent = cartData[i].name;
-            item.setAttribute("id", "cart-product" + (i+1));
+
+            // remove item
+            del = document.createElement("td");
+            delBtn = document.createElement("img");
+            delBtn.src = "images/trash.gif";
+            delBtn.addEventListener("click", removeFromCart, false);
+            del.appendChild(delBtn);
+
+            // change item quantity
+            qty = document.createElement("td");
+            qtyBtn = document.createElement("select");
+            for(j = 1; j <= 4; j++) {
+                var new_option = new Option(""+j,j);
+                qtyBtn.options.add(new_option);
+            }
+            qtyBtn.addEventListener("change", updateQuantity, false);
+            qty.appendChild(qtyBtn);
+
+            item.appendChild(qty);
+            item.appendChild(del);
             cartRt.appendChild(item);
         }
+    }
+
+    function removeFromCart(){
+
+    }
+
+    function updateQuantity(){
+
     }
 
     emptyCart.addEventListener("click", function(e) {
