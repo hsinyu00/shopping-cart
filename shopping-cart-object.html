@@ -155,10 +155,12 @@ function Cart(){
 
             // key from product data
             for(key in cartData[i]) {
-                var field = document.createElement("td");
-                field.classList.add(key);
-                field.textContent = cartData[i][key];
-                item.appendChild(field);
+                if (['id','name','price'].indexOf(key) > -1) {
+                    var field = document.createElement("td");
+                    field.classList.add(key);
+                    field.textContent = cartData[i][key];
+                    item.appendChild(field);
+                }
             }
 
             // remove item
@@ -176,6 +178,8 @@ function Cart(){
                 var new_option = new Option(""+j,j);
                 qtyBtn.options.add(new_option);
             }
+            qtyBtn.setAttribute("data-id", "qty-" + cartData[i].id);
+            qtyBtn.value = self.cartItems[i].quantity;
             qtyBtn.addEventListener("change", updateQuantity, false);
             qty.appendChild(qtyBtn);
 
@@ -186,10 +190,8 @@ function Cart(){
     }
 
     function removeFromCart(e){
-        var targetId = e.target.getAttribute('data-id');
-        targetId = targetId.split("-").pop();
+        var targetId = e.target.getAttribute('data-id').split("-").pop();
         var ok = confirm("Delete this item?");
-
         if(ok) {
             for (var i = 0; i < self.cartItems.length; i++){
                 if (self.cartItems[i].id === targetId){
@@ -202,7 +204,14 @@ function Cart(){
     }
 
     function updateQuantity(e){
-
+        var targetId = e.target.getAttribute('data-id').split("-").pop();
+        for (var i = 0; i < self.cartItems.length; i++){
+            if (self.cartItems[i].id === targetId){
+                self.cartItems[i].quantity = Number(e.target.value);
+                displayCart(cartRt, self.cartItems);
+                break;
+            }
+        }
     }
 
     emptyCart.addEventListener("click", function(e) {
