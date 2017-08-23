@@ -144,24 +144,46 @@ function Cart(){
     */
     function displayCart(cartRt, cartData){
         cartRt.innerHTML = "";
+        var cartTb = document.createElement("table");
+        var cartTr = document.createElement("tr");
+        var cartTh = ['ID','Product Name','Subtotal','Quantity','Delete'];
+        for(x = 0; x < cartTh.length; x++) {
+            var th = document.createElement("th");
+            th.textContent = cartTh[x];
+            cartTr.appendChild(th);
+        }
+        cartTb.appendChild(cartTr);
+        cartRt.appendChild(cartTb);
+
+        /*
+        */
         for(i = 0; i < cartData.length; i++){
             var item = document.createElement("tr");
-            var qty,
+            var sub,
+                qty,
                 qtyBtn,
                 del,
-                delBtn;
+                delBtn,
+                total,
+                totalTd,
+                sum;
 
             item.setAttribute("id", "cart-" + (cartData[i].id));
 
             // key from product data
             for(key in cartData[i]) {
-                if (['id','name','price'].indexOf(key) > -1) {
+                if (['id','name'].indexOf(key) > -1) {
                     var field = document.createElement("td");
                     field.classList.add(key);
                     field.textContent = cartData[i][key];
                     item.appendChild(field);
                 }
             }
+
+            sub = document.createElement("td");
+            sub.classList.add('sub');
+            sub.textContent = cartData[i].price * cartData[i].quantity;
+            item.appendChild(sub);
 
             // remove item
             del = document.createElement("td");
@@ -185,8 +207,18 @@ function Cart(){
 
             item.appendChild(qty);
             item.appendChild(del);
-            cartRt.appendChild(item);
+            cartTb.appendChild(item);
         }
+        total = document.createElement("tr");
+        totalTd = document.createElement("td");
+        totalTd.setAttribute("colspan","5");
+        function getSum(total, item) {
+            return total + item['price'] * item['quantity'];
+        }
+        sum = self.cartItems.reduce(getSum, 0);
+        totalTd.innerHTML = "Total: " + sum;
+        total.appendChild(totalTd);
+        cartTb.appendChild(total);
     }
 
     function removeFromCart(e){
