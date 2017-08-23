@@ -53,7 +53,7 @@ function Cart(){
     var emptyCart = document.getElementById('emptyCart');
     if (localStorage.cartItems) {
         self.cartItems = JSON.parse(localStorage.cartItems);
-        displayCart(cartRt, self.cartItems);
+        displayCart(self.cartItems);
     } else {
         self.cartItems = [];
     }
@@ -136,89 +136,94 @@ function Cart(){
             self.cartItems[0].quantity = 1;
         }
 
-        displayCart(cartRt, self.cartItems);
+        displayCart(self.cartItems);
     }
 
     /*
     render cart template
     */
-    function displayCart(cartRt, cartData){
-        cartRt.innerHTML = "";
-        var cartTb = document.createElement("table");
-        var cartTr = document.createElement("tr");
-        var cartTh = ['ID','Product Name','Subtotal','Quantity','Delete'];
-        for(x = 0; x < cartTh.length; x++) {
-            var th = document.createElement("th");
-            th.textContent = cartTh[x];
-            cartTr.appendChild(th);
-        }
-        cartTb.appendChild(cartTr);
-        cartRt.appendChild(cartTb);
+    function displayCart(cartData){
+        if(self.cartItems.length > 0) {
+            // create template
+            cartRt.innerHTML = "";
+            var cartTb = document.createElement("table");
+            var cartTr = document.createElement("tr");
+            var cartTh = ['ID','Product Name','Subtotal','Quantity','Delete'];
+            for(x = 0; x < cartTh.length; x++) {
+                var th = document.createElement("th");
+                th.textContent = cartTh[x];
+                cartTr.appendChild(th);
+            }
+            cartTb.appendChild(cartTr);
+            cartRt.appendChild(cartTb);
 
-        /*
-        */
-        for(i = 0; i < cartData.length; i++){
-            var item = document.createElement("tr");
-            var sub,
-                qty,
-                qtyBtn,
-                del,
-                delBtn,
-                total,
-                totalTd,
-                sum;
+            /*
+            */
+            for(i = 0; i < cartData.length; i++){
+                var item = document.createElement("tr");
+                var sub,
+                    qty,
+                    qtyBtn,
+                    del,
+                    delBtn,
+                    total,
+                    totalTd,
+                    sum;
 
-            item.setAttribute("id", "cart-" + (cartData[i].id));
+                item.setAttribute("id", "cart-" + (cartData[i].id));
 
-            // key from product data
-            for(key in cartData[i]) {
-                if (['id','name'].indexOf(key) > -1) {
-                    var field = document.createElement("td");
-                    field.classList.add(key);
-                    field.textContent = cartData[i][key];
-                    item.appendChild(field);
+                // key from product data
+                for(key in cartData[i]) {
+                    if (['id','name'].indexOf(key) > -1) {
+                        var field = document.createElement("td");
+                        field.classList.add(key);
+                        field.textContent = cartData[i][key];
+                        item.appendChild(field);
+                    }
                 }
+
+                sub = document.createElement("td");
+                sub.classList.add('sub');
+                sub.textContent = cartData[i].price * cartData[i].quantity;
+                item.appendChild(sub);
+
+                // remove item
+                del = document.createElement("td");
+                delBtn = document.createElement("img");
+                delBtn.src = "images/trash.gif";
+                delBtn.setAttribute("data-id", "del-" + cartData[i].id);
+                delBtn.addEventListener("click", removeFromCart, false);
+                del.appendChild(delBtn);
+
+                // change item quantity
+                qty = document.createElement("td");
+                qtyBtn = document.createElement("select");
+                for(j = 1; j <= 4; j++) {
+                    var new_option = new Option(""+j,j);
+                    qtyBtn.options.add(new_option);
+                }
+                qtyBtn.setAttribute("data-id", "qty-" + cartData[i].id);
+                qtyBtn.value = self.cartItems[i].quantity;
+                qtyBtn.addEventListener("change", updateQuantity, false);
+                qty.appendChild(qtyBtn);
+
+                item.appendChild(qty);
+                item.appendChild(del);
+                cartTb.appendChild(item);
             }
-
-            sub = document.createElement("td");
-            sub.classList.add('sub');
-            sub.textContent = cartData[i].price * cartData[i].quantity;
-            item.appendChild(sub);
-
-            // remove item
-            del = document.createElement("td");
-            delBtn = document.createElement("img");
-            delBtn.src = "images/trash.gif";
-            delBtn.setAttribute("data-id", "del-" + cartData[i].id);
-            delBtn.addEventListener("click", removeFromCart, false);
-            del.appendChild(delBtn);
-
-            // change item quantity
-            qty = document.createElement("td");
-            qtyBtn = document.createElement("select");
-            for(j = 1; j <= 4; j++) {
-                var new_option = new Option(""+j,j);
-                qtyBtn.options.add(new_option);
+            total = document.createElement("tr");
+            totalTd = document.createElement("td");
+            totalTd.setAttribute("colspan","5");
+            function getSum(total, item) {
+                return total + item['price'] * item['quantity'];
             }
-            qtyBtn.setAttribute("data-id", "qty-" + cartData[i].id);
-            qtyBtn.value = self.cartItems[i].quantity;
-            qtyBtn.addEventListener("change", updateQuantity, false);
-            qty.appendChild(qtyBtn);
-
-            item.appendChild(qty);
-            item.appendChild(del);
-            cartTb.appendChild(item);
+            sum = self.cartItems.reduce(getSum, 0);
+            totalTd.innerHTML = "Total: " + sum;
+            total.appendChild(totalTd);
+            cartTb.appendChild(total);
+        } else {
+            cartRt.innerHTML = "No item in cart.";
         }
-        total = document.createElement("tr");
-        totalTd = document.createElement("td");
-        totalTd.setAttribute("colspan","5");
-        function getSum(total, item) {
-            return total + item['price'] * item['quantity'];
-        }
-        sum = self.cartItems.reduce(getSum, 0);
-        totalTd.innerHTML = "Total: " + sum;
-        total.appendChild(totalTd);
-        cartTb.appendChild(total);
     }
 
     function removeFromCart(e){
@@ -228,7 +233,7 @@ function Cart(){
             for (var i = 0; i < self.cartItems.length; i++){
                 if (self.cartItems[i].id === targetId){
                     self.cartItems.splice(i,1);
-                    displayCart(cartRt, self.cartItems);
+                    displayCart(self.cartItems);
                     break;
                 }
             }
@@ -240,7 +245,7 @@ function Cart(){
         for (var i = 0; i < self.cartItems.length; i++){
             if (self.cartItems[i].id === targetId){
                 self.cartItems[i].quantity = Number(e.target.value);
-                displayCart(cartRt, self.cartItems);
+                displayCart(self.cartItems);
                 break;
             }
         }
@@ -248,8 +253,7 @@ function Cart(){
 
     emptyCart.addEventListener("click", function(e) {
         self.cartItems = [];
-        displayCart('cart', self.cartItems);
-        cartRt.innerHTML = "No item in cart.";
+        displayCart(self.cartItems);
     }, false);
 
     self.loadProducts = function(file){
